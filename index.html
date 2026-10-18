@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal VB | Notícias de Várzea Branca</title>
+<style>
+:root {
+  --vb-navy: #260747;
+  --vb-night: #35105E;
+  --vb-cyan: #7C2BE8;
+  --vb-blue: #6D28D9;
+  --vb-magenta: #C026D3;
+  --vb-purple: #4B168C;
+  --vb-white: #FFFFFF;
+  --vb-light: #F7F5FB;
+  --vb-muted: #756B83;
+  --vb-line: #E8E0F0;
+  --vb-text: #29213A;
+
+  --vb-gradient: linear-gradient(
+    115deg,
+    #4B168C 0%,
+    #7C2BE8 55%,
+    #C026D3 100%
+  );
+
+  --shadow: 0 10px 32px #26074712;
+}
+*{box-sizing:border-box}
+body{margin:0;color:var(--vb-text);background:var(--vb-white);font-family:Arial,Helvetica,sans-serif;overflow-x:hidden}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+
+.topline{height:6px;background:var(--vb-gradient)}
+.site-header{background:var(--vb-navy);border-bottom:1px solid var(--vb-line);color:var(--vb-white)}
+.header-inner{max-width:1180px;margin:auto;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:22px}
+.brand{display:flex;align-items:center;gap:13px;min-width:0}
+.logo{width:58px;height:58px;border-radius:50%;background:var(--vb-night);display:grid;place-items:center;color:var(--vb-white);font-size:26px;font-weight:900;letter-spacing:-3px;position:relative;box-shadow:0 0 0 3px var(--vb-white),0 0 0 5px var(--vb-purple);flex-shrink:0;overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover}
+.logo:after{content:"";position:absolute;inset:-7px;border-radius:50%;border:2px solid transparent;border-top-color:var(--vb-magenta);border-right-color:var(--vb-cyan);transform:rotate(-25deg);pointer-events:none}
+.brand-name{font-size:25px;letter-spacing:.04em;font-weight:900;margin:0;color:var(--vb-white)}.brand-name span{background:var(--vb-gradient);background-clip:text;color:transparent}
+.tagline{font-size:10px;letter-spacing:.17em;color:#d8c9f5;margin-top:5px;text-transform:uppercase}
+.header-right{display:flex;align-items:center;gap:18px}.header-note{font-size:12px;color:#d8c9f5}
+.admin-link{border:1px solid #5d1fa2;background:var(--vb-night);color:var(--vb-white);border-radius:9px;padding:9px 12px;font-weight:700;font-size:12px}.admin-link:hover{background:var(--vb-purple);border-color:var(--vb-magenta)}
+
+.navline{background:var(--vb-night);color:var(--vb-white)}
+.nav-inner{max-width:1180px;margin:auto;padding:0 24px;display:flex;align-items:center;gap:22px;min-height:45px;overflow-x:auto}
+.nav-label{font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding-right:20px;border-right:1px solid #ffffff33;color:var(--vb-cyan);white-space:nowrap}
+.nav-topic{font-size:12px;color:#e8def8;white-space:nowrap}
+
+.container{max-width:1180px;margin:0 auto;padding:28px 24px 60px}
+.section-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.section-kicker{font-size:11px;letter-spacing:.15em;font-weight:800;color:var(--vb-purple);text-transform:uppercase}
+.section-title{font-size:22px;margin:5px 0 0;letter-spacing:-.03em;color:var(--vb-navy)}
+.date-label{font-size:12px;color:var(--vb-muted)}
+
+.lead-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,1fr);gap:20px}
+
+/* MANCHETE PRINCIPAL COM TRATAMENTO DE IMAGEM */
+.lead-card{position:relative;min-height:380px;border-radius:16px;overflow:hidden;background:var(--vb-night);color:white;display:flex;align-items:flex-end;box-shadow:var(--shadow);cursor:pointer}
+.lead-card.has-image{background-size:cover;background-position:center;background-repeat:no-repeat}
+.lead-card.contain-image{background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#140324}
+.lead-card:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#260747ed 0%,#35105e90 42%,#26074705 100%)}
+.lead-content{position:relative;padding:27px;max-width:760px;z-index:2}
+.label-chip{display:inline-block;background:var(--vb-purple);color:white;border-radius:5px;padding:6px 9px;font-size:10px;letter-spacing:.1em;font-weight:800;text-transform:uppercase}
+.lead-title{font-family:Georgia,'Times New Roman',serif;font-size:clamp(27px,3.5vw,42px);line-height:1.08;margin:14px 0 10px;letter-spacing:-.035em}
+.lead-sub{font-size:15px;color:#f3e8ff;line-height:1.6;max-width:620px;margin:0 0 15px}
+.byline{font-size:11px;color:#e2d9f3}
+
+/* NOTÍCIAS SECUNDÁRIAS — LAYOUT EQUILIBRADO */
+.side-stories {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+  gap: 16px;
+  align-content: start;
+}
+
+.side-story {
+  display: grid;
+  grid-template-columns: 38% minmax(0, 1fr);
+  min-height: 160px;
+  max-height: 210px;
+  border: 1px solid var(--vb-line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--vb-white);
+  transition: transform .18s, box-shadow .18s;
+  cursor: pointer;
+}
+
+.side-story:hover, .news-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px #26074712;
+}
+
+.story-image {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  background: #F0E8FA;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: var(--vb-purple);
+  font-weight: 900;
+  font-size: 28px;
+}
+
+.story-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.story-image.contain img {
+  object-fit: contain;
+  background: #100528;
+}
+
+.story-copy {
+  min-width: 0;
+  min-height: 0;
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+.category {
+  font-size: 10px;
+  color: var(--vb-purple);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+}
+
+.story-copy h3 {
+  font: 700 17px/1.22 Georgia, "Times New Roman", serif;
+  margin: 7px 0;
+  color: var(--vb-navy);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.story-copy p {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--vb-muted);
+  margin: 0 0 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.story-copy .meta {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 10px;
+  color: var(--vb-muted);
+}
+
+.rule{height:1px;background:var(--vb-line);margin:34px 0 26px}
+.news-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.news-card{border:1px solid var(--vb-line);border-radius:13px;overflow:hidden;background:white;display:flex;flex-direction:column;transition:.18s;cursor:pointer}
+.card-image{height:185px;background:var(--vb-light);display:grid;place-items:center;color:var(--vb-purple);font-size:30px;font-weight:900;overflow:hidden}
+.card-image img{width:100%;height:100%;object-fit:cover}
+.card-image.contain img{object-fit:contain;background:#f3e8ff}
+.card-copy{padding:17px;display:flex;flex:1;flex-direction:column}
+.card-copy h3{font:700 21px/1.18 Georgia,'Times New Roman',serif;margin:8px 0;color:var(--vb-navy)}
+.card-copy p{font-size:13px;color:var(--vb-muted);line-height:1.6;margin:0 0 15px}
+.readmore{margin-top:13px;color:var(--vb-blue);font-size:12px;font-weight:800}
+
+.empty-news{grid-column:1/-1;text-align:center;padding:50px 20px;background:var(--vb-light);border:1px dashed #d9deec;border-radius:14px;color:var(--vb-muted)}
+.empty-news strong{display:block;color:var(--vb-navy);margin-bottom:6px}
+
+.footer{background:var(--vb-navy);color:#f3e8ff}
+.footer-inner{max-width:1180px;margin:auto;padding:26px 24px;display:flex;justify-content:space-between;gap:20px;align-items:center}
+.footer strong{font-size:14px;letter-spacing:.06em;color:var(--vb-cyan)}
+.footer p{margin:5px 0 0;color:#d8c9f5;font-size:11px}
+.footer small{color:#d8c9f5;font-size:11px}
+
+/* OVERLAYS & MODALS COM ROLAGEM CORRIGIDA PARA CELULAR */
+.overlay{position:fixed;inset:0;background:#260747cc;display:none;align-items:center;justify-content:center;padding:16px;z-index:30;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.overlay.open{display:flex}
+.modal{width:min(100%,480px);background:#fff;border-radius:17px;box-shadow:0 30px 90px #26074780;padding:25px;margin:auto;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal h2{margin:0 0 7px;font-size:22px;color:var(--vb-navy)}
+.modal p{color:var(--vb-muted);font-size:13px;line-height:1.5}
+.modal-top{display:flex;justify-content:space-between;gap:12px}
+.close{border:0;background:var(--vb-light);border-radius:8px;width:34px;height:34px;font-size:19px;color:var(--vb-navy);flex-shrink:0}
+
+.field{display:grid;gap:7px;margin:15px 0}
+.field label{font-size:12px;font-weight:800;color:var(--vb-navy)}
+.field input,.field textarea,.field select{width:100%;border:1px solid var(--vb-line);border-radius:9px;padding:11px 12px;outline:none;background:var(--vb-white)}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--vb-cyan);box-shadow:0 0 0 3px #7c2be826}
+
+.btn{border:1px solid var(--vb-line);background:white;border-radius:9px;padding:10px 14px;font-size:12px;font-weight:800;color:var(--vb-navy)}
+.btn.primary{background:var(--vb-gradient);border:0;color:white}
+.btn.danger{color:#c13d54}.full{width:100%}
+.form-error{font-size:12px;color:#c13d54;min-height:17px}
+
+.admin-modal{width:min(100%,1000px);max-height:90vh}
+.admin-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.admin-head h2{margin:0;color:var(--vb-navy)}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap}
+.admin-table-wrap{overflow:auto;border:1px solid var(--vb-line);border-radius:10px;max-height:50vh}
+.admin-table{width:100%;border-collapse:collapse;min-width:600px}
+.admin-table th,.admin-table td{text-align:left;padding:12px;border-bottom:1px solid var(--vb-line);font-size:12px}
+.admin-table th{color:var(--vb-muted);background:var(--vb-light);text-transform:uppercase;font-size:10px;letter-spacing:.07em;position:sticky;top:0}
+.admin-form{display:none;border:1px solid var(--vb-line);border-radius:12px;padding:17px;margin-bottom:18px;background:var(--vb-light)}
+.admin-form.open{display:block}
+.admin-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 15px}
+.admin-form-grid .wide{grid-column:1/-1}
+.admin-form textarea{min-height:130px;resize:vertical}
+.admin-form-footer{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.admin-image-preview{max-width:160px;max-height:100px;object-fit:cover;border-radius:8px;display:block;margin-top:8px}
+
+.editor-toolbar{display:flex;gap:5px;flex-wrap:wrap;background:#f3e8ff;padding:6px;border-radius:8px 8px 0 0;border:1px solid var(--vb-line);border-bottom:0}
+.editor-toolbar button{background:#fff;border:1px solid var(--vb-line);border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;color:var(--vb-navy)}
+.editor-toolbar button:hover{background:var(--vb-light)}
+.autosave-indicator{font-size:11px;color:var(--vb-muted);align-self:center}
+
+.preview-modal-content{width:min(100%,800px);max-height:90vh;background:#fff;border-radius:17px;padding:0}
+.article-overlay .modal{width:min(100%,800px);padding:0;overflow-y:auto}
+.article-hero{height:280px;background:var(--vb-gradient);overflow:hidden}
+.article-hero img{width:100%;height:100%;object-fit:cover}
+.article-content{padding:30px}
+.article-content h1{font:700 clamp(28px,5vw,42px)/1.12 Georgia,serif;margin:12px 0;color:var(--vb-navy)}
+.article-subtitle{font-size:18px;line-height:1.5;color:var(--vb-muted)}
+.article-body{font:17px/1.85 Georgia,serif;margin-top:25px;overflow-wrap:anywhere}
+.article-body img{max-width:100%}
+.article-body blockquote{border-left:4px solid var(--vb-purple);margin-left:0;padding-left:18px;color:#4a526d}
+.article-top{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--vb-light);border-bottom:1px solid var(--vb-line);position:sticky;top:0;z-index:5}
+.article-top b{color:var(--vb-purple);font-size:12px;letter-spacing:.08em}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--vb-navy);color:white;padding:12px 17px;border-radius:10px;z-index:50;display:none;font-size:13px;box-shadow:0 10px 35px #2607474d}
+.toast.show{display:block}
+
+/* MEDIA QUERIES OTIMIZADAS PARA CELULAR */
+@media(max-width:850px){
+  .lead-grid{grid-template-columns:1fr}
+  .lead-card{min-height:300px}
+  .side-stories{grid-template-columns:1fr;grid-template-rows:auto}
+  .side-story{grid-template-columns:34% minmax(0,1fr);min-height:145px;max-height:185px}
+  .news-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .header-note{display:none}
+}
+
+@media(max-width:560px){
+  .header-inner{padding:14px 16px}
+  .logo{width:45px;height:45px;font-size:21px}
+  .brand-name{font-size:20px}
+  .tagline{font-size:8px}
+  .header-right{gap:8px}
+  .admin-link{padding:8px;font-size:11px}
+  .nav-inner{padding:0 16px;gap:12px}
+  .nav-label{padding-right:12px}
+  .nav-topic{font-size:10px}
+  .container{padding:22px 15px 42px}
+  
+  .lead-card{min-height:285px;border-radius:16px}
+  .lead-content{padding:19px}
+  .lead-title{font-size:clamp(24px,6.5vw,31px);line-height:1.12;overflow-wrap:anywhere}
+  .lead-sub{font-size:13px;line-height:1.5}
+  
+  .side-stories{grid-template-columns:1fr}
+  .side-story{grid-template-columns:112px minmax(0,1fr);min-height:140px;max-height:170px}
+  .story-image{min-width:0;min-height:140px}
+  .story-copy{padding:11px}
+  .story-copy h3{font-size:15px;-webkit-line-clamp:3}
+  .story-copy p{font-size:11px;-webkit-line-clamp:2}
+  
+  .news-grid{grid-template-columns:1fr;gap:14px}
+  .card-image{height:190px}
+  .section-title{font-size:20px}
+  .footer-inner{padding:22px 16px;align-items:flex-start;flex-direction:column}
+  .admin-form-grid{grid-template-columns:1fr}
+  .admin-form-grid .wide{grid-column:auto}
+  .article-content{padding:21px}
+  .article-hero{height:210px}
+  .article-body{font-size:16px}
+  .modal{padding:20px;max-height:92vh}
+}
+</style>
+</head>
+<body>
+<div class="topline"></div>
+<header class="site-header"><div class="header-inner">
+  <div class="brand">
+    <div class="logo" id="publicLogo">
+      <img src="logo.png" alt="Logo" onerror="this.style.display='none';this.parentElement.innerText='VB';">
+    </div>
+    <div><h1 class="brand-name" id="siteName">PORTAL <span>VB</span></h1><div class="tagline" id="siteTagline">Informação. Conexão. Resultado.</div></div>
+  </div>
+  <div class="header-right"><div class="header-note">Várzea Branca e região</div><button class="admin-link" id="adminEntry">Área do administrador ↗</button></div>
+</div></header>
+<div class="navline"><div class="nav-inner"><span class="nav-label">Notícias</span><span class="nav-topic">Várzea Branca</span><span class="nav-topic">Região</span><span class="nav-topic">Eventos</span><span class="nav-topic">Cultura</span><span class="nav-topic">Entretenimento</span></div></div>
+<main class="container">
+  <div class="section-top"><div><div class="section-kicker">Portal de notícias</div><h2 class="section-title">As notícias que movimentam a nossa região</h2></div><div class="date-label" id="today"></div></div>
+  <section class="lead-grid" id="leadGrid"></section>
+  <div class="rule"></div>
+  <section><div class="section-top"><div><div class="section-kicker">Fique por dentro</div><h2 class="section-title">Últimas notícias</h2></div><div class="date-label" id="newsCount"></div></div><div class="news-grid" id="newsGrid"></div></section>
+</main>
+<footer class="footer"><div class="footer-inner"><div><strong id="footerName">PORTAL VB</strong><p id="footerTag">Informação. Conexão. Resultado.</p></div><small>Notícias • Eventos • Cultura • Várzea Branca – PI</small></div></footer>
+
+<!-- LOGIN MODAL -->
+<div class="overlay" id="loginOverlay" role="dialog" aria-modal="true"><div class="modal">
+  <div class="modal-top"><div><h2>Área restrita</h2><p>Entre com a senha administrativa para gerenciar as notícias.</p></div><button class="close" id="closeLogin">×</button></div>
+  <form id="loginForm"><div class="field"><label for="adminPassword">Senha do administrador</label><input id="adminPassword" type="password" placeholder="Digite a senha (12345)" required></div><div class="form-error" id="loginError"></div><button class="btn primary full" type="submit">Entrar no painel</button></form>
+</div></div>
+
+<!-- ADMIN MODAL -->
+<div class="overlay" id="adminOverlay" role="dialog" aria-modal="true"><div class="modal admin-modal">
+  <div class="admin-head"><div><div class="section-kicker">Área restrita</div><h2>Gerenciamento de notícias</h2><div style="font-size:12px;color:var(--vb-muted);margin-top:4px">Editor profissional com salvamento automático e pré-visualização.</div></div><div class="admin-actions"><button class="btn primary" id="newArticle">＋ Nova notícia</button><button class="btn" id="logout">Sair</button><button class="close" id="closeAdmin">×</button></div></div>
+  
+  <form class="admin-form" id="articleForm"><input type="hidden" id="articleId">
+    <div class="admin-form-grid">
+      <div class="field wide"><label for="articleTitle">Título / manchete *</label><input id="articleTitle" maxlength="180" required placeholder="Digite a manchete principal"></div>
+      <div class="field wide"><label for="articleSubtitle">Subtítulo</label><textarea id="articleSubtitle" rows="2" placeholder="Resumo curto que complementa o título"></textarea></div>
+      <div class="field"><label for="articleCategory">Categoria</label><select id="articleCategory"><option>Várzea Branca</option><option>Região</option><option>Eventos</option><option>Cultura</option><option>Política</option><option>Esportes</option><option>Entretenimento</option></select></div>
+      <div class="field"><label for="articleAuthor">Autor</label><input id="articleAuthor" value="Redação Portal VB"></div>
+      
+      <div class="field wide">
+        <label for="articleImage">Imagem de capa</label>
+        <input type="file" id="articleImage" accept="image/*">
+        <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+          <input type="checkbox" id="imageFitContain" style="width:auto; cursor:pointer;">
+          <label for="imageFitContain" style="font-weight:normal; font-size:12px; cursor:pointer;">Exibir imagem inteira sem cortes (Modo Adaptado)</label>
+        </div>
+        <img id="imagePreview" class="admin-image-preview" alt="Prévia da imagem" style="display:none">
+      </div>
+      
+      <div class="field wide">
+        <label for="articleBody">Corpo da notícia *</label>
+        <div class="editor-toolbar">
+          <button type="button" id="fmtBold"><b>B</b></button>
+          <button type="button" id="fmtItalic"><i>I</i></button>
+          <button type="button" id="fmtH3">Título</button>
+          <button type="button" id="fmtQuote">Citação</button>
+          <button type="button" id="fmtList">Lista</button>
+          <span class="autosave-indicator" id="autoSaveStatus">Salvamento automático ativo</span>
+        </div>
+        <textarea id="articleBody" required placeholder="Escreva a notícia completa..."></textarea>
+      </div>
+
+      <div class="field"><label for="articleStatus">Status</label><select id="articleStatus"><option value="published">Publicar notícia</option><option value="draft">Salvar como rascunho</option></select></div>
+      <div class="field"><label for="articleDate">Data</label><input type="date" id="articleDate" required></div>
+    </div>
+    <div class="admin-form-footer">
+      <button class="btn" type="button" id="previewBtn">🔍 Pré-visualizar</button>
+      <button class="btn" type="button" id="cancelEdit">Cancelar</button>
+      <button class="btn primary" type="submit">Salvar notícia</button>
+    </div>
+  </form>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px"><input id="adminSearch" placeholder="Buscar notícia..." style="flex:1;min-width:180px;border:1px solid var(--vb-line);border-radius:9px;padding:10px"><select id="adminFilter" style="border:1px solid var(--vb-line);border-radius:9px;padding:10px"><option value="active">Notícias ativas</option><option value="trash">Lixeira</option><option value="all">Todas</option></select></div>
+  <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Manchete</th><th>Categoria</th><th>Status</th><th>Ações</th></tr></thead><tbody id="adminRows"></tbody></table></div>
+</div></div>
+
+<!-- PREVIEW MODAL -->
+<div class="overlay" id="previewOverlay" role="dialog" aria-modal="true"><div class="preview-modal-content modal">
+  <div class="article-top"><b>PRÉ-VISUALIZAÇÃO DA NOTÍCIA</b><button class="close" id="closePreview">×</button></div>
+  <div class="preview-device-toggle" style="padding:15px 20px 0; display:flex; gap:6px;">
+    <button class="btn" type="button" id="prevDesktop">💻 Computador</button>
+    <button class="btn" type="button" id="prevMobile">📱 Celular</button>
+  </div>
+  <div id="previewContainer" style="padding:20px; transition: width 0.3s ease; margin:auto;">
+    <div class="article-hero" id="previewHero" style="height:220px; border-radius:10px;"></div>
+    <div class="article-content" style="padding:15px 0">
+      <div class="category" id="previewCategory"></div>
+      <h1 id="previewTitle" style="font-size:28px; font-family:Georgia,serif; margin:10px 0"></h1>
+      <div class="article-subtitle" id="previewSubtitle"></div>
+      <div class="meta" id="previewMeta" style="margin:10px 0"></div>
+      <div class="article-body" id="previewBody"></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ARTICLE VIEW MODAL -->
+<div class="overlay article-overlay" id="articleOverlay" role="dialog" aria-modal="true"><div class="modal"><div class="article-top"><b>PORTAL VB · NOTÍCIAS</b><button class="close" id="closeArticle">×</button></div><div class="article-hero" id="articleHero"></div><article class="article-content"><div class="category" id="articleViewCategory"></div><h1 id="articleViewTitle"></h1><div class="article-subtitle" id="articleViewSubtitle"></div><div class="meta" id="articleViewMeta" style="margin-top:15px"></div><div class="article-body" id="articleViewBody"></div><button class="btn primary" id="shareArticle" style="margin-top:22px">↗ Compartilhar notícia</button></article></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+$('#today').textContent = new Date().toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});
+
+const demo = [
+  {id:1, title:'Portal VB: informação, conexão e resultado para Várzea Branca e região', subtitle:'Um espaço digital para acompanhar os acontecimentos e eventos.', body:'Esta é uma matéria demonstrativa do Portal VB.\n\nO portal foi pensado para reunir informações locais em uma página organizada.', category:'Várzea Branca', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false},
+  {id:2, title:'Eventos e cultura ganham espaço no Portal VB', subtitle:'Acompanhe a agenda e os talentos da comunidade.', body:'Conteúdo demonstrativo de cultura regional.', category:'Cultura', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false},
+  {id:3, title:'Acompanhe as principais notícias da região', subtitle:'Atualizações regionais organizadas em um só lugar.', body:'Conteúdo de demonstração regional.', category:'Região', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false}
+];
+
+let articles = load('portalvb_articles', demo), adminUnlocked = false, editingImage = '', activeArticle = null;
+
+function load(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; }
+}
+function save() {
+  try { localStorage.setItem('portalvb_articles', JSON.stringify(articles)); } catch(e) { toast('Armazenamento cheio.'); }
+}
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+function published() {
+  return articles.filter(a => a.status === 'published' && !a.trashed).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+}
+function imageHTML(a, cls) {
+  if(!a.image) return `<div class="${cls}"><span>VB</span></div>`;
+  const containClass = a.fitContain ? 'contain' : '';
+  return `<div class="${cls} ${containClass}"><img src="${a.image}" alt="${escapeHTML(a.title)}"></div>`;
+}
+
+function renderPublic() {
+  const list = published();
+  const lead = list[0];
+  const side = list.slice(1,3);
+  $('#newsCount').textContent = list.length + ' matéria(s)';
+  
+  if(!lead) {
+    $('#leadGrid').innerHTML = '<div class="empty-news"><strong>Em breve, novas notícias</strong>As publicações aparecerão aqui assim que forem publicadas.</div>';
+    $('#newsGrid').innerHTML = '';
+    return;
+  }
+  
+  const leadContainClass = lead.fitContain ? 'contain-image' : 'has-image';
+  
+  $('#leadGrid').innerHTML = `
+    <article class="lead-card ${lead.image?leadContainClass:''}" ${lead.image?`style="background-image:url('${lead.image}')"`:''} data-id="${lead.id}" role="button" tabindex="0">
+      <div class="lead-content">
+        <span class="label-chip">${escapeHTML(lead.category)}</span>
+        <h2 class="lead-title">${escapeHTML(lead.title)}</h2>
+        <p class="lead-sub">${escapeHTML(lead.subtitle||'Acompanhe esta notícia no Portal VB.')}</p>
+        <div class="byline">${escapeHTML(lead.author||'Redação Portal VB')} · ${formatDate(lead.date)}</div>
+      </div>
+    </article>
+    <div class="side-stories">
+      ${side.length ? side.map(a => `
+        <article class="side-story" data-id="${a.id}" role="button" tabindex="0">
+          ${imageHTML(a,'story-image')}
+          <div class="story-copy">
+            <div class="category">${escapeHTML(a.category)}</div>
+            <h3>${escapeHTML(a.title)}</h3>
+            <p>${escapeHTML(a.subtitle||'Confira os detalhes desta notícia.')}</p>
+            <div class="meta">${formatDate(a.date)}</div>
+          </div>
+        </article>`).join('') : '<div class="empty-news"><strong>Mais notícias em breve</strong></div>'}
+    </div>`;
+
+  const rest = list.slice(3);
+  $('#newsGrid').innerHTML = rest.length ? rest.map(a => `
+    <article class="news-card" data-id="${a.id}" role="button" tabindex="0">
+      ${imageHTML(a,'card-image')}
+      <div class="card-copy">
+        <div class="category">${escapeHTML(a.category)}</div>
+        <h3>${escapeHTML(a.title)}</h3>
+        <p>${escapeHTML(a.subtitle||'Acompanhe os detalhes desta publicação.')}</p>
+        <div class="meta">${escapeHTML(a.author||'Redação Portal VB')} · ${formatDate(a.date)}</div>
+        <div class="readmore">LER NOTÍCIA →</div>
+      </div>
+    </article>`).join('') : '<div class="empty-news"><strong>Você está em dia com as notícias</strong></div>';
+
+  document.querySelectorAll('.lead-card, .side-story, .news-card').forEach(card => {
+    card.onclick = () => openArticle(Number(card.dataset.id));
+  });
+}
+
+function formatDate(d) {
+  if(!d) return 'Data não informada';
+  return new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function openArticle(id) {
+  const a = articles.find(x => x.id === id && !x.trashed && x.status === 'published');
+  if(!a) return;
+  activeArticle = a;
+  $('#articleViewCategory').textContent = a.category;
+  $('#articleViewTitle').textContent = a.title;
+  $('#articleViewSubtitle').textContent = a.subtitle || '';
+  $('#articleViewMeta').textContent = (a.author || 'Redação Portal VB') + ' · ' + formatDate(a.date);
+  $('#articleViewBody').innerHTML = escapeHTML(a.body).replace(/\n/g,'<br><br>');
+  $('#articleHero').innerHTML = a.image ? `<img src="${a.image}" alt="${escapeHTML(a.title)}" style="object-fit:${a.fitContain?'contain':'cover'}; background:${a.fitContain?'#140324':'transparent'}">` : '<div style="height:100%;display:grid;place-items:center;color:#fff;font-size:48px;font-weight:900;">PORTAL VB</div>';
+  $('#articleOverlay').classList.add('open');
+}
+
+$('#closeArticle').onclick = () => $('#articleOverlay').classList.remove('open');
+$('#articleOverlay').onclick = e => { if(e.target.id === 'articleOverlay') $('#articleOverlay').classList.remove('open'); };
+
+$('#shareArticle').onclick = async () => {
+  if(!activeArticle) return;
+  const text = activeArticle.title + ' — Portal VB';
+  try {
+    if(navigator.share) await navigator.share({title:activeArticle.title, text, url:location.href});
+    else if(navigator.clipboard) { await navigator.clipboard.writeText(text+' '+location.href); toast('Link copiado!'); }
+    else toast(text);
+  } catch(e) {}
+};
+
+function formatText(tag) {
+  const ta = $('#articleBody');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const sel = ta.value.substring(start, end);
+  let rep = '';
+  if(tag === 'b') rep = `**${sel || 'negrito'}**`;
+  if(tag === 'i') rep = `*${sel || 'itálico'}*`;
+  if(tag === 'h3') rep = `\n### ${sel || 'Subtítulo'}\n`;
+  if(tag === 'quote') rep = `\n> ${sel || 'Citação'}\n`;
+  if(tag === 'ul') rep = `\n- ${sel || 'Item'} \n`;
+  ta.value = ta.value.substring(0, start) + rep + ta.value.substring(end);
+  ta.focus();
+}
+$('#fmtBold').onclick = () => formatText('b');
+$('#fmtItalic').onclick = () => formatText('i');
+$('#fmtH3').onclick = () => formatText('h3');
+$('#fmtQuote').onclick = () => formatText('quote');
+$('#fmtList').onclick = () => formatText('ul');
+
+let autoSaveTimer;
+$('#articleTitle').oninput = $('#articleBody').oninput = () => {
+  clearTimeout(autoSaveTimer);
+  $('#autoSaveStatus').textContent = 'Salvando...';
+  autoSaveTimer = setTimeout(() => {
+    localStorage.setItem('portalvb_draft_title', $('#articleTitle').value);
+    localStorage.setItem('portalvb_draft_body', $('#articleBody').value);
+    $('#autoSaveStatus').textContent = 'Rascunho salvo automaticamente';
+  }, 800);
+};
+
+$('#previewBtn').onclick = () => {
+  $('#previewCategory').textContent = $('#articleCategory').value;
+  $('#previewTitle').textContent = $('#articleTitle').value || 'Manchete da Notícia';
+  $('#previewSubtitle').textContent = $('#articleSubtitle').value;
+  $('#previewMeta').textContent = $('#articleAuthor').value + ' · ' + formatDate($('#articleDate').value);
+  $('#previewBody').innerHTML = escapeHTML($('#articleBody').value).replace(/\n/g,'<br><br>');
+  const isContain = $('#imageFitContain').checked;
+  $('#previewHero').innerHTML = editingImage ? `<img src="${editingImage}" style="width:100%;height:100%;object-fit:${isContain?'contain':'cover'}; background:${isContain?'#140324':'transparent'}">` : '<div style="height:100%;display:grid;place-items:center;color:#fff;background:var(--vb-gradient);font-weight:bold;">SEM IMAGEM</div>';
+  $('#previewOverlay').classList.add('open');
+};
+$('#closePreview').onclick = () => $('#previewOverlay').classList.remove('open');
+$('#prevDesktop').onclick = () => { $('#previewContainer').style.width = '100%'; };
+$('#prevMobile').onclick = () => { $('#previewContainer').style.width = '360px'; };
+
+$('#adminEntry').onclick = () => { $('#loginError').textContent=''; $('#adminPassword').value=''; $('#loginOverlay').classList.add('open'); setTimeout(()=>$('#adminPassword').focus(),100); };
+$('#closeLogin').onclick = () => $('#loginOverlay').classList.remove('open');
+$('#loginOverlay').onclick = e => { if(e.target.id === 'loginOverlay') $('#loginOverlay').classList.remove('open'); };
+
+$('#loginForm').onsubmit = e => {
+  e.preventDefault();
+  if($('#adminPassword').value === '12345') {
+    adminUnlocked = true;
+    $('#loginOverlay').classList.remove('open');
+    $('#adminOverlay').classList.add('open');
+    renderAdmin();
+    toast('Acesso autorizado.');
+  } else {
+    $('#loginError').textContent = 'Senha incorreta (use 12345).';
+  }
+};
+
+$('#closeAdmin').onclick = () => $('#adminOverlay').classList.remove('open');
+$('#logout').onclick = () => { adminUnlocked = false; $('#adminOverlay').classList.remove('open'); resetForm(); };
+$('#adminOverlay').onclick = e => { if(e.target.id === 'adminOverlay') $('#adminOverlay').classList.remove('open'); };
+
+$('#newArticle').onclick = () => showForm();
+$('#cancelEdit').onclick = resetForm;
+
+function showForm(a = null) {
+  $('#articleForm').classList.add('open');
+  $('#articleId').value = a?.id || '';
+  $('#articleTitle').value = a?.title || localStorage.getItem('portalvb_draft_title') || '';
+  $('#articleSubtitle').value = a?.subtitle || '';
+  $('#articleCategory').value = a?.category || 'Várzea Branca';
+  $('#articleAuthor').value = a?.author || 'Redação Portal VB';
+  $('#articleBody').value = a?.body || localStorage.getItem('portalvb_draft_body') || '';
+  $('#articleStatus').value = a?.status || 'published';
+  $('#articleDate').value = a?.date || new Date().toISOString().slice(0,10);
+  editingImage = a?.image || '';
+  $('#imageFitContain').checked = a?.fitContain || false;
+  $('#articleImage').value = '';
+  $('#imagePreview').style.display = editingImage ? 'block' : 'none';
+  $('#imagePreview').src = editingImage;
+  $('#articleTitle').focus();
+}
+
+function resetForm() {
+  $('#articleForm').classList.remove('open');
+  $('#articleForm').reset();
+  $('#articleId').value = '';
+  editingImage = '';
+  $('#imageFitContain').checked = false;
+  $('#imagePreview').style.display = 'none';
+}
+
+$('#articleImage').onchange = e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    editingImage = r.result;
+    $('#imagePreview').src = editingImage;
+    $('#imagePreview').style.display = 'block';
+  };
+  r.readAsDataURL(f);
+};
+
+$('#articleForm').onsubmit = e => {
+  e.preventDefault();
+  if(!adminUnlocked) { toast('Sessão expirada.'); return; }
+  const idVal = $('#articleId').value;
+  const id = idVal ? Number(idVal) : Date.now();
+  const existing = articles.find(x => x.id === id);
+  
+  const item = {
+    id,
+    title: $('#articleTitle').value.trim(),
+    subtitle: $('#articleSubtitle').value.trim(),
+    category: $('#articleCategory').value,
+    author: $('#articleAuthor').value.trim() || 'Redação Portal VB',
+    body: $('#articleBody').value.trim(),
+    status: $('#articleStatus').value,
+    date: $('#articleDate').value,
+    image: editingImage,
+    fitContain: $('#imageFitContain').checked,
+    trashed: existing ? existing.trashed : false
+  };
+
+  if(!item.title || !item.body) { toast('Preencha o título e o corpo da notícia.'); return; }
+  
+  if(existing) Object.assign(existing, item);
+  else articles.unshift(item);
+  
+  localStorage.removeItem('portalvb_draft_title');
+  localStorage.removeItem('portalvb_draft_body');
+  save();
+  resetForm();
+  renderAdmin();
+  renderPublic();
+  toast('Salvo com sucesso!');
+};
+
+$('#adminSearch').oninput = renderAdmin;
+$('#adminFilter').onchange = renderAdmin;
+
+function renderAdmin() {
+  if(!adminUnlocked) return;
+  const q = $('#adminSearch').value.toLowerCase(), filter = $('#adminFilter').value;
+  const rows = articles.filter(a => (filter === 'all' || (filter === 'trash' ? a.trashed : !a.trashed)) && [a.title, a.category, a.author].some(s => (s||'').toLowerCase().includes(q))).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  
+  const tbody = $('#adminRows');
+  tbody.innerHTML = rows.length ? rows.map(a => `
+    <tr>
+      <td><b>${escapeHTML(a.title)}</b><div style="color:var(--vb-muted);margin-top:4px">${formatDate(a.date)}</div></td>
+      <td>${escapeHTML(a.category)}</td>
+      <td>${a.trashed ? '<span style="color:#bd4057">Lixeira</span>' : a.status === 'published' ? '<span style="color:#13825d">Publicada</span>' : '<span style="color:#a27412">Rascunho</span>'}</td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          ${a.trashed ? `
+            <button class="btn btn-restore" data-id="${a.id}">Restaurar</button>
+            <button class="btn danger btn-delete" data-id="${a.id}">Excluir</button>
+          ` : `
+            <button class="btn btn-edit" data-id="${a.id}">Editar</button>
+            <button class="btn btn-toggle" data-id="${a.id}">${a.status==='published'?'Rascunho':'Publicar'}</button>
+            <button class="btn danger btn-trash" data-id="${a.id}">Lixeira</button>
+          `}
+        </div>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--vb-muted)">Nenhuma notícia encontrada.</td></tr>';
+
+  tbody.querySelectorAll('.btn-edit').forEach(b => b.onclick = () => editArticle(Number(b.dataset.id)));
+  tbody.querySelectorAll('.btn-toggle').forEach(b => b.onclick = () => togglePublish(Number(b.dataset.id)));
+  tbody.querySelectorAll('.btn-trash').forEach(b => b.onclick = () => trashArticle(Number(b.dataset.id)));
+  tbody.querySelectorAll('.btn-restore').forEach(b => b.onclick = () => restoreArticle(Number(b.dataset.id)));
+  tbody.querySelectorAll('.btn-delete').forEach(b => b.onclick = () => deleteForever(Number(b.dataset.id)));
+}
+
+function editArticle(id) { const a = articles.find(x => x.id === id); if(a) showForm(a); }
+function togglePublish(id) {
+  const a = articles.find(x => x.id === id);
+  if(a && !a.trashed) { a.status = a.status === 'published' ? 'draft' : 'published'; save(); renderAdmin(); renderPublic(); toast('Status atualizado.'); }
+}
+function trashArticle(id) {
+  const a = articles.find(x => x.id === id);
+  if(a && confirm('Mover esta notícia para a lixeira?')) { a.trashed = true; save(); renderAdmin(); renderPublic(); toast('Movida para a lixeira.'); }
+}
+function restoreArticle(id) {
+  const a = articles.find(x => x.id === id);
+  if(a) { a.trashed = false; save(); renderAdmin(); renderPublic(); toast('Restaurada.'); }
+}
+function deleteForever(id) {
+  if(confirm('Apagar definitivamente? Esta ação não pode ser desfeita.')) {
+    articles = articles.filter(x => x.id !== id);
+    save(); renderAdmin(); renderPublic(); toast('Excluída definitivamente.');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(x => x.classList.remove('open'));
+});
+
+init();
+function init() { renderPublic(); }
+</script>
+</body></html>
