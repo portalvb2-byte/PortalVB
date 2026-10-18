@@ -358,7 +358,14 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
     </div>
   </form>
 
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px"><input id="adminSearch" placeholder="Buscar notícia..." style="flex:1;min-width:180px;border:1px solid var(--vb-line);border-radius:9px;padding:10px"><select id="adminFilter" style="border:1px solid var(--vb-line);border-radius:9px;padding:10px"><option value="active">Notícias ativas</option><optiooption value="trash">Lixeira</option><option value="all">Todas</option></select></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px">
+    <input id="adminSearch" placeholder="Buscar notícia..." style="flex:1;min-width:180px;border:1px solid var(--vb-line);border-radius:9px;padding:10px">
+    <select id="adminFilter" style="border:1px solid var(--vb-line);border-radius:9px;padding:10px">
+      <option value="active">Notícias ativ<option value="active">Notícias ativas</option>
+      <option value="trash">Lixeira</option>
+      <option value="all">Todas</option>
+    </select>
+  </div>
   <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Manchete</th><th>Categoria</th><th>Status</th><th>Ações</th></tr></thead><tbody id="adminRows"></tbody></table></div>
 </div></div>
 
@@ -391,7 +398,6 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
 <script>
-// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBAZnw6WyNLF6e57AcCR4D-PXDWLExbJ6Y",
   authDomain: "portalvb-7352b.firebaseapp.com",
@@ -402,15 +408,28 @@ const firebaseConfig = {
   appId: "1:214459817076:web:4ce1752b4316c0ae050521"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
+let db = null, storage = null;
+try {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  db = firebase.firestore();
+  storage = firebase.storage();
+} catch(e) {
+  console.warn("Firebase não inicializado, operando localmente.", e);
+}
 
 const $ = s => document.querySelector(s);
 const escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 $('#today').textContent = new Date().toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});
 
-let articles = [], adminUnlocked = false, selectedImageFile = null, editingImageURL = '', activeArticle = null;
+const demoArticles = [
+  {id:'demo1', title:'Portal VB: informação, conexão e resultado para Várzea Branca e região', subtitle:'Um espaço digital para acompanhar os acontecimentos e eventos.', body:'Esta é uma matéria demonstrativa do Portal VB.\n\nO portal foi pensado para reunir informações locais em uma página organizada.', category:'Várzea Branca', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false},
+  {id:'demo2', title:'Eventos e cultura ganham espaço no Portal VB', subtitle:'Acompanhe a agenda e os talentos da comunidade.', body:'Conteúdo demonstrativo de cultura regional.', category:'Cultura', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false},
+  {id:'demo3', title:'Acompanhe as principais notícias da região', subtitle:'Atualizações regionais organizadas em um só lugar.', body:'Conteúdo de demonstração regional.', category:'Região', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false}
+];
+
+let articles = [...demoArticles], adminUnlocked = false, selectedImageFile = null, editingImageURL = '', activeArticle = null;
 
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
@@ -427,18 +446,25 @@ function imageHTML(a, cls) {
   return `<div class="${cls} ${containClass}"><img src="${a.image}" alt="${escapeHTML(a.title)}"></div>`;
 }
 
-// Carregar notícias do Firestore em tempo real
 function initFirebaseSync() {
+  if (!db) {
+    renderPublic();
+    return;
+  }
+  
   db.collection("articles").onSnapshot(snapshot => {
-    articles = [];
+    const cloudArticles = [];
     snapshot.forEach(doc => {
-      articles.push({ id: doc.id, ...doc.data() });
+      cloudArticles.push({ id: doc.id, ...doc.data() });
     });
+    if (cloudArticles.length > 0) {
+      articles = cloudArticles;
+    }
     renderPublic();
     if(adminUnlocked) renderAdmin();
   }, err => {
-    console.error("Erro ao carregar do Firestore:", err);
-    toast("Erro ao sincronizar dados com o banco.");
+    console.warn("Aviso de sincronização Firestore:", err.message);
+    renderPublic();
   });
 }
 
@@ -502,7 +528,7 @@ function formatDate(d) {
 }
 
 function openArticle(id) {
-  const a = articles.find(x => x.id === id && !x.trashed && x.status === 'published');
+  const a = articles.find(x => String(x.id) === String(id) && !x.trashed && x.status === 'published');
   if(!a) return;
   activeArticle = a;
   $('#articleViewCategory').textContent = a.category;
@@ -644,23 +670,21 @@ $('#articleForm').onsubmit = async e => {
   toast('Salvando notícia...');
   let imageUrl = editingImageURL;
 
-  // Se houver uma nova imagem selecionada, envia para o Firebase Storage
-  if(selectedImageFile) {
-    try {
+  try {
+    if(selectedImageFile && storage) {
       const storageRef = storage.ref(`articles/${Date.now()}_${selectedImageFile.name}`);
       const snapshot = await storageRef.put(selectedImageFile);
       imageUrl = await snapshot.ref.getDownloadURL();
-    } catch(err) {
-      console.error("Erro no upload da imagem:", err);
-      toast("Erro ao enviar imagem para o Storage.");
-      return;
     }
+  } catch(err) {
+    console.warn("Aviso no upload da imagem:", err);
   }
 
   const idVal = $('#articleId').value;
-  const docId = idVal ? idVal : String(Date.now());
+  const docId = idVal ? String(idVal) : String(Date.now());
   
   const item = {
+    id: docId,
     title: $('#articleTitle').value.trim(),
     subtitle: $('#articleSubtitle').value.trim(),
     category: $('#articleCategory').value,
@@ -675,17 +699,27 @@ $('#articleForm').onsubmit = async e => {
 
   if(!item.title || !item.body) { toast('Preencha o título e o corpo da notícia.'); return; }
 
-  try {
-    await db.collection("articles").doc(docId).set(item, { merge: true });
-    localStorage.removeItem('portalvb_draft_title');
-    localStorage.removeItem('portalvb_draft_body');
-    resetForm();
-    renderAdmin();
-    toast('Salvo com sucesso na nuvem!');
-  } catch(err) {
-    console.error("Erro ao salvar no Firestore:", err);
-    toast("Erro ao salvar notícia no banco de dados.");
+  if(db) {
+    try {
+      await db.collection("articles").doc(docId).set(item, { merge: true });
+      toast('Salvo com sucesso na nuvem!');
+    } catch(err) {
+      console.error("Erro ao salvar no Firestore:", err);
+      toast('Erro ao salvar no banco. Verifique as regras.');
+      return;
+    }
+  } else {
+    const idx = articles.findIndex(x => String(x.id) === docId);
+    if(idx >= 0) articles[idx] = item;
+    else articles.unshift(item);
+    toast('Salvo localmente!');
   }
+
+  localStorage.removeItem('portalvb_draft_title');
+  localStorage.removeItem('portalvb_draft_body');
+  resetForm();
+  renderAdmin();
+  renderPublic();
 };
 
 $('#adminSearch').oninput = renderAdmin;
@@ -723,48 +757,78 @@ function renderAdmin() {
   tbody.querySelectorAll('.btn-delete').forEach(b => b.onclick = () => deleteForever(b.dataset.id));
 }
 
-function editArticle(id) { const a = articles.find(x => x.id === id); if(a) showForm(a); }
+function editArticle(id) { const a = articles.find(x => String(x.id) === String(id)); if(a) showForm(a); }
 
 async function togglePublish(id) {
-  const a = articles.find(x => x.id === id);
+  const a = articles.find(x => String(x.id) === String(id));
   if(a && !a.trashed) {
     const newStatus = a.status === 'published' ? 'draft' : 'published';
-    try {
-      await db.collection("articles").doc(id).update({ status: newStatus });
+    if(db) {
+      try {
+        await db.collection("articles").doc(String(id)).update({ status: newStatus });
+        toast('Status atualizado.');
+      } catch(err) {
+        toast('Erro ao atualizar status.');
+      }
+    } else {
+      a.status = newStatus;
+      renderAdmin();
+      renderPublic();
       toast('Status atualizado.');
-    } catch(err) {
-      toast('Erro ao atualizar status.');
     }
   }
 }
 
 async function trashArticle(id) {
   if(confirm('Mover esta notícia para a lixeira?')) {
-    try {
-      await db.collection("articles").doc(id).update({ trashed: true });
+    if(db) {
+      try {
+        await db.collection("articles").doc(String(id)).update({ trashed: true });
+        toast('Movidapara a lixeira.');
+      } catch(err) {
+        toast('Erro ao mover para a lixeira.');
+      }
+    } else {
+      const a = articles.find(x => String(x.id) === String(id));
+      if(a) a.trashed = true;
+      renderAdmin();
+      renderPublic();
       toast('Movida para a lixeira.');
-    } catch(err) {
-      toast('Erro ao mover para a lixeira.');
     }
   }
 }
 
 async function restoreArticle(id) {
-  try {
-    await db.collection("articles").doc(id).update({ trashed: false });
+  if(db) {
+    try {
+      await db.collection("articles").doc(String(id)).update({ trashed: false });
+      toast('Restaurada.');
+    } catch(err) {
+      toast('Erro ao restaurar.');
+    }
+  } else {
+    const a = articles.find(x => String(x.id) === String(id));
+    if(a) a.trashed = false;
+    renderAdmin();
+    renderPublic();
     toast('Restaurada.');
-  } catch(err) {
-    toast('Erro ao restaurar.');
   }
 }
 
 async function deleteForever(id) {
   if(confirm('Apagar definitivamente? Esta ação não pode ser desfeita.')) {
-    try {
-      await db.collection("articles").doc(id).delete();
+    if(db) {
+      try {
+        await db.collection("articles").doc(String(id)).delete();
+        toast('Excluída definitivamente.');
+      } catch(err) {
+        toast('Erro ao excluir.');
+      }
+    } else {
+      articles = articles.filter(x => String(x.id) !== String(id));
+      renderAdmin();
+      renderPublic();
       toast('Excluída definitivamente.');
-    } catch(err) {
-      toast('Erro ao excluir.');
     }
   }
 }
@@ -773,7 +837,6 @@ document.addEventListener('keydown', e => {
   if(e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(x => x.classList.remove('open'));
 });
 
-// Inicialização com Firebase
 initFirebaseSync();
 </script>
 </body></html>
