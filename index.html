@@ -358,14 +358,7 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
     </div>
   </form>
 
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px">
-    <input id="adminSearch" placeholder="Buscar notícia..." style="flex:1;min-width:180px;border:1px solid var(--vb-line);border-radius:9px;padding:10px">
-    <select id="adminFilter" style="border:1px solid var(--vb-line);border-radius:9px;padding:10px">
-      <option value="active">Notícias ativ<option value="active">Notícias ativas</option>
-      <option value="trash">Lixeira</option>
-      <option value="all">Todas</option>
-    </select>
-  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px"><input id="adminSearch" placeholder="Buscar notícia..." style="flex:1;min-width:180px;border:1px solid var(--vb-line);border-radius:9px;padding:10px"><select id="adminFilter" style="border:1px solid var(--vb-line);border-radius:9px;padding:10px"><option value="active">Notícias ativas</option><option value="trash">Lixeira</option><option value="all">Todas</option></select></div>
   <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Manchete</th><th>Categoria</th><th>Status</th><th>Ações</th></tr></thead><tbody id="adminRows"></tbody></table></div>
 </div></div>
 
@@ -392,80 +385,36 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 <div class="overlay article-overlay" id="articleOverlay" role="dialog" aria-modal="true"><div class="modal"><div class="article-top"><b>PORTAL VB · NOTÍCIAS</b><button class="close" id="closeArticle">×</button></div><div class="article-hero" id="articleHero"></div><article class="article-content"><div class="category" id="articleViewCategory"></div><h1 id="articleViewTitle"></h1><div class="article-subtitle" id="articleViewSubtitle"></div><div class="meta" id="articleViewMeta" style="margin-top:15px"></div><div class="article-body" id="articleViewBody"></div><button class="btn primary" id="shareArticle" style="margin-top:22px">↗ Compartilhar notícia</button></article></div></div>
 <div class="toast" id="toast"></div>
 
-<!-- FIREBASE SDKs (Compat v10) -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
-
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBAZnw6WyNLF6e57AcCR4D-PXDWLExbJ6Y",
-  authDomain: "portalvb-7352b.firebaseapp.com",
-  databaseURL: "https://portalvb-7352b-default-rtdb.firebaseio.com",
-  projectId: "portalvb-7352b",
-  storageBucket: "portalvb-7352b.firebasestorage.app",
-  messagingSenderId: "214459817076",
-  appId: "1:214459817076:web:4ce1752b4316c0ae050521"
-};
-
-let db = null, storage = null;
-try {
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-  db = firebase.firestore();
-  storage = firebase.storage();
-} catch(e) {
-  console.warn("Firebase não inicializado, operando localmente.", e);
-}
-
 const $ = s => document.querySelector(s);
 const escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 $('#today').textContent = new Date().toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});
 
-const demoArticles = [
-  {id:'demo1', title:'Portal VB: informação, conexão e resultado para Várzea Branca e região', subtitle:'Um espaço digital para acompanhar os acontecimentos e eventos.', body:'Esta é uma matéria demonstrativa do Portal VB.\n\nO portal foi pensado para reunir informações locais em uma página organizada.', category:'Várzea Branca', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false},
-  {id:'demo2', title:'Eventos e cultura ganham espaço no Portal VB', subtitle:'Acompanhe a agenda e os talentos da comunidade.', body:'Conteúdo demonstrativo de cultura regional.', category:'Cultura', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false},
-  {id:'demo3', title:'Acompanhe as principais notícias da região', subtitle:'Atualizações regionais organizadas em um só lugar.', body:'Conteúdo de demonstração regional.', category:'Região', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false}
+const demo = [
+  {id:1, title:'Portal VB: informação, conexão e resultado para Várzea Branca e região', subtitle:'Um espaço digital para acompanhar os acontecimentos e eventos.', body:'Esta é uma matéria demonstrativa do Portal VB.\n\nO portal foi pensado para reunir informações locais em uma página organizada.', category:'Várzea Branca', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false},
+  {id:2, title:'Eventos e cultura ganham espaço no Portal VB', subtitle:'Acompanhe a agenda e os talentos da comunidade.', body:'Conteúdo demonstrativo de cultura regional.', category:'Cultura', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false},
+  {id:3, title:'Acompanhe as principais notícias da região', subtitle:'Atualizações regionais organizadas em um só lugar.', body:'Conteúdo de demonstração regional.', category:'Região', author:'Redação Portal VB', date:new Date().toISOString().slice(0,10), status:'published', image:'', fitContain:false, trashed:false}
 ];
 
-let articles = [...demoArticles], adminUnlocked = false, selectedImageFile = null, editingImageURL = '', activeArticle = null;
+let articles = load('portalvb_articles', demo), adminUnlocked = false, editingImage = '', activeArticle = null;
 
+function load(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; }
+}
+function save() {
+  try { localStorage.setItem('portalvb_articles', JSON.stringify(articles)); } catch(e) { toast('Armazenamento cheio.'); }
+}
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2600);
 }
-
 function published() {
   return articles.filter(a => a.status === 'published' && !a.trashed).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 }
-
 function imageHTML(a, cls) {
   if(!a.image) return `<div class="${cls}"><span>VB</span></div>`;
   const containClass = a.fitContain ? 'contain' : '';
   return `<div class="${cls} ${containClass}"><img src="${a.image}" alt="${escapeHTML(a.title)}"></div>`;
-}
-
-function initFirebaseSync() {
-  if (!db) {
-    renderPublic();
-    return;
-  }
-  
-  db.collection("articles").onSnapshot(snapshot => {
-    const cloudArticles = [];
-    snapshot.forEach(doc => {
-      cloudArticles.push({ id: doc.id, ...doc.data() });
-    });
-    if (cloudArticles.length > 0) {
-      articles = cloudArticles;
-    }
-    renderPublic();
-    if(adminUnlocked) renderAdmin();
-  }, err => {
-    console.warn("Aviso de sincronização Firestore:", err.message);
-    renderPublic();
-  });
 }
 
 function renderPublic() {
@@ -518,7 +467,7 @@ function renderPublic() {
     </article>`).join('') : '<div class="empty-news"><strong>Você está em dia com as notícias</strong></div>';
 
   document.querySelectorAll('.lead-card, .side-story, .news-card').forEach(card => {
-    card.onclick = () => openArticle(card.dataset.id);
+    card.onclick = () => openArticle(Number(card.dataset.id));
   });
 }
 
@@ -528,7 +477,7 @@ function formatDate(d) {
 }
 
 function openArticle(id) {
-  const a = articles.find(x => String(x.id) === String(id) && !x.trashed && x.status === 'published');
+  const a = articles.find(x => x.id === id && !x.trashed && x.status === 'published');
   if(!a) return;
   activeArticle = a;
   $('#articleViewCategory').textContent = a.category;
@@ -579,7 +528,7 @@ $('#articleTitle').oninput = $('#articleBody').oninput = () => {
   autoSaveTimer = setTimeout(() => {
     localStorage.setItem('portalvb_draft_title', $('#articleTitle').value);
     localStorage.setItem('portalvb_draft_body', $('#articleBody').value);
-    $('#autoSaveStatus').textContent = 'Rascunho salvo localmente';
+    $('#autoSaveStatus').textContent = 'Rascunho salvo automaticamente';
   }, 800);
 };
 
@@ -590,8 +539,7 @@ $('#previewBtn').onclick = () => {
   $('#previewMeta').textContent = $('#articleAuthor').value + ' · ' + formatDate($('#articleDate').value);
   $('#previewBody').innerHTML = escapeHTML($('#articleBody').value).replace(/\n/g,'<br><br>');
   const isContain = $('#imageFitContain').checked;
-  const currentPreviewImg = $('#imagePreview').src;
-  $('#previewHero').innerHTML = currentPreviewImg && $('#imagePreview').style.display !== 'none' ? `<img src="${currentPreviewImg}" style="width:100%;height:100%;object-fit:${isContain?'contain':'cover'}; background:${isContain?'#140324':'transparent'}">` : '<div style="height:100%;display:grid;place-items:center;color:#fff;background:var(--vb-gradient);font-weight:bold;">SEM IMAGEM</div>';
+  $('#previewHero').innerHTML = editingImage ? `<img src="${editingImage}" style="width:100%;height:100%;object-fit:${isContain?'contain':'cover'}; background:${isContain?'#140324':'transparent'}">` : '<div style="height:100%;display:grid;place-items:center;color:#fff;background:var(--vb-gradient);font-weight:bold;">SEM IMAGEM</div>';
   $('#previewOverlay').classList.add('open');
 };
 $('#closePreview').onclick = () => $('#previewOverlay').classList.remove('open');
@@ -632,12 +580,11 @@ function showForm(a = null) {
   $('#articleBody').value = a?.body || localStorage.getItem('portalvb_draft_body') || '';
   $('#articleStatus').value = a?.status || 'published';
   $('#articleDate').value = a?.date || new Date().toISOString().slice(0,10);
-  editingImageURL = a?.image || '';
-  selectedImageFile = null;
+  editingImage = a?.image || '';
   $('#imageFitContain').checked = a?.fitContain || false;
   $('#articleImage').value = '';
-  $('#imagePreview').style.display = editingImageURL ? 'block' : 'none';
-  $('#imagePreview').src = editingImageURL;
+  $('#imagePreview').style.display = editingImage ? 'block' : 'none';
+  $('#imagePreview').src = editingImage;
   $('#articleTitle').focus();
 }
 
@@ -645,8 +592,7 @@ function resetForm() {
   $('#articleForm').classList.remove('open');
   $('#articleForm').reset();
   $('#articleId').value = '';
-  editingImageURL = '';
-  selectedImageFile = null;
+  editingImage = '';
   $('#imageFitContain').checked = false;
   $('#imagePreview').style.display = 'none';
 }
@@ -654,37 +600,24 @@ function resetForm() {
 $('#articleImage').onchange = e => {
   const f = e.target.files[0];
   if(!f) return;
-  selectedImageFile = f;
   const r = new FileReader();
-  r.onload = ev => {
-    $('#imagePreview').src = ev.target.result;
-    $('#imagePreview'].style.display = 'block';
+  r.onload = () => {
+    editingImage = r.result;
+    $('#imagePreview').src = editingImage;
+    $('#imagePreview').style.display = 'block';
   };
   r.readAsDataURL(f);
 };
 
-$('#articleForm').onsubmit = async e => {
+$('#articleForm').onsubmit = e => {
   e.preventDefault();
   if(!adminUnlocked) { toast('Sessão expirada.'); return; }
-  
-  toast('Salvando notícia...');
-  let imageUrl = editingImageURL;
-
-  try {
-    if(selectedImageFile && storage) {
-      const storageRef = storage.ref(`articles/${Date.now()}_${selectedImageFile.name}`);
-      const snapshot = await storageRef.put(selectedImageFile);
-      imageUrl = await snapshot.ref.getDownloadURL();
-    }
-  } catch(err) {
-    console.warn("Aviso no upload da imagem:", err);
-  }
-
   const idVal = $('#articleId').value;
-  const docId = idVal ? String(idVal) : String(Date.now());
+  const id = idVal ? Number(idVal) : Date.now();
+  const existing = articles.find(x => x.id === id);
   
   const item = {
-    id: docId,
+    id,
     title: $('#articleTitle').value.trim(),
     subtitle: $('#articleSubtitle').value.trim(),
     category: $('#articleCategory').value,
@@ -692,34 +625,23 @@ $('#articleForm').onsubmit = async e => {
     body: $('#articleBody').value.trim(),
     status: $('#articleStatus').value,
     date: $('#articleDate').value,
-    image: imageUrl,
+    image: editingImage,
     fitContain: $('#imageFitContain').checked,
-    trashed: false
+    trashed: existing ? existing.trashed : false
   };
 
   if(!item.title || !item.body) { toast('Preencha o título e o corpo da notícia.'); return; }
-
-  if(db) {
-    try {
-      await db.collection("articles").doc(docId).set(item, { merge: true });
-      toast('Salvo com sucesso na nuvem!');
-    } catch(err) {
-      console.error("Erro ao salvar no Firestore:", err);
-      toast('Erro ao salvar no banco. Verifique as regras.');
-      return;
-    }
-  } else {
-    const idx = articles.findIndex(x => String(x.id) === docId);
-    if(idx >= 0) articles[idx] = item;
-    else articles.unshift(item);
-    toast('Salvo localmente!');
-  }
-
+  
+  if(existing) Object.assign(existing, item);
+  else articles.unshift(item);
+  
   localStorage.removeItem('portalvb_draft_title');
   localStorage.removeItem('portalvb_draft_body');
+  save();
   resetForm();
   renderAdmin();
   renderPublic();
+  toast('Salvo com sucesso!');
 };
 
 $('#adminSearch').oninput = renderAdmin;
@@ -750,86 +672,30 @@ function renderAdmin() {
       </td>
     </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--vb-muted)">Nenhuma notícia encontrada.</td></tr>';
 
-  tbody.querySelectorAll('.btn-edit').forEach(b => b.onclick = () => editArticle(b.dataset.id));
-  tbody.querySelectorAll('.btn-toggle').forEach(b => b.onclick = () => togglePublish(b.dataset.id));
-  tbody.querySelectorAll('.btn-trash').forEach(b => b.onclick = () => trashArticle(b.dataset.id));
-  tbody.querySelectorAll('.btn-restore').forEach(b => b.onclick = () => restoreArticle(b.dataset.id));
-  tbody.querySelectorAll('.btn-delete').forEach(b => b.onclick = () => deleteForever(b.dataset.id));
+  tbody.querySelectorAll('.btn-edit').forEach(b => b.onclick = () => editArticle(Number(b.dataset.id)));
+  tbody.querySelectorAll('.btn-toggle').forEach(b => b.onclick = () => togglePublish(Number(b.dataset.id)));
+  tbody.querySelectorAll('.btn-trash').forEach(b => b.onclick = () => trashArticle(Number(b.dataset.id)));
+  tbody.querySelectorAll('.btn-restore').forEach(b => b.onclick = () => restoreArticle(Number(b.dataset.id)));
+  tbody.querySelectorAll('.btn-delete').forEach(b => b.onclick = () => deleteForever(Number(b.dataset.id)));
 }
 
-function editArticle(id) { const a = articles.find(x => String(x.id) === String(id)); if(a) showForm(a); }
-
-async function togglePublish(id) {
-  const a = articles.find(x => String(x.id) === String(id));
-  if(a && !a.trashed) {
-    const newStatus = a.status === 'published' ? 'draft' : 'published';
-    if(db) {
-      try {
-        await db.collection("articles").doc(String(id)).update({ status: newStatus });
-        toast('Status atualizado.');
-      } catch(err) {
-        toast('Erro ao atualizar status.');
-      }
-    } else {
-      a.status = newStatus;
-      renderAdmin();
-      renderPublic();
-      toast('Status atualizado.');
-    }
-  }
+function editArticle(id) { const a = articles.find(x => x.id === id); if(a) showForm(a); }
+function togglePublish(id) {
+  const a = articles.find(x => x.id === id);
+  if(a && !a.trashed) { a.status = a.status === 'published' ? 'draft' : 'published'; save(); renderAdmin(); renderPublic(); toast('Status atualizado.'); }
 }
-
-async function trashArticle(id) {
-  if(confirm('Mover esta notícia para a lixeira?')) {
-    if(db) {
-      try {
-        await db.collection("articles").doc(String(id)).update({ trashed: true });
-        toast('Movidapara a lixeira.');
-      } catch(err) {
-        toast('Erro ao mover para a lixeira.');
-      }
-    } else {
-      const a = articles.find(x => String(x.id) === String(id));
-      if(a) a.trashed = true;
-      renderAdmin();
-      renderPublic();
-      toast('Movida para a lixeira.');
-    }
-  }
+function trashArticle(id) {
+  const a = articles.find(x => x.id === id);
+  if(a && confirm('Mover esta notícia para a lixeira?')) { a.trashed = true; save(); renderAdmin(); renderPublic(); toast('Movida para a lixeira.'); }
 }
-
-async function restoreArticle(id) {
-  if(db) {
-    try {
-      await db.collection("articles").doc(String(id)).update({ trashed: false });
-      toast('Restaurada.');
-    } catch(err) {
-      toast('Erro ao restaurar.');
-    }
-  } else {
-    const a = articles.find(x => String(x.id) === String(id));
-    if(a) a.trashed = false;
-    renderAdmin();
-    renderPublic();
-    toast('Restaurada.');
-  }
+function restoreArticle(id) {
+  const a = articles.find(x => x.id === id);
+  if(a) { a.trashed = false; save(); renderAdmin(); renderPublic(); toast('Restaurada.'); }
 }
-
-async function deleteForever(id) {
+function deleteForever(id) {
   if(confirm('Apagar definitivamente? Esta ação não pode ser desfeita.')) {
-    if(db) {
-      try {
-        await db.collection("articles").doc(String(id)).delete();
-        toast('Excluída definitivamente.');
-      } catch(err) {
-        toast('Erro ao excluir.');
-      }
-    } else {
-      articles = articles.filter(x => String(x.id) !== String(id));
-      renderAdmin();
-      renderPublic();
-      toast('Excluída definitivamente.');
-    }
+    articles = articles.filter(x => x.id !== id);
+    save(); renderAdmin(); renderPublic(); toast('Excluída definitivamente.');
   }
 }
 
@@ -837,6 +703,7 @@ document.addEventListener('keydown', e => {
   if(e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(x => x.classList.remove('open'));
 });
 
-initFirebaseSync();
+init();
+function init() { renderPublic(); }
 </script>
 </body></html>
